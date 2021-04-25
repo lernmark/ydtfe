@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Modal from "./components/Modal";
 import Navigation from './components/Navigation';
 import LoginForm from './components/LoginForm';
-import { FirebaseDatabaseProvider } from "@react-firebase/database";
+// import { FirebaseDatabaseProvider } from "@react-firebase/database";
 
 
 const todoItems = [
