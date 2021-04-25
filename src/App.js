@@ -2,54 +2,16 @@ import React, { Component } from "react";
 import Modal from "./components/Modal";
 import Navigation from './components/Navigation';
 import LoginForm from './components/LoginForm';
-// import { FirebaseDatabaseProvider } from "@react-firebase/database";
+import {firebase} from './initFirebase';
 
-
-const todoItems = [
-  {
-    id: 1,
-    title: "Go to Market",
-    description: "Buy ingredients to prepare dinner",
-    isCompleted: true,
-  },
-  {
-    id: 6,
-    title: "Go to Market",
-    description: "Buy ingredients to prepare dinner",
-    isCompleted: true,
-  },
-  {
-    id: 5,
-    title: "Go to Marke 3",
-    description: "Buy ingredients to prepare dinner 3",
-    isCompleted: false,
-  },
-  {
-    id: 2,
-    title: "Study",
-    description: "Read Algebra and History textbook for the upcoming test",
-    isCompleted: false,
-  },
-  {
-    id: 3,
-    title: "Sammy's books",
-    description: "Go to library to return Sammy's books",
-    isCompleted: true,
-  },
-  {
-    id: 4,
-    title: "Article",
-    description: "Write article on how to use Django with React",
-    isCompleted: false,
-  },
-];
+const db = firebase.database();
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       viewCompleted: false,
-      todoList: todoItems,
+      todoList: [],
       modal: false,
       displayed_form: '',
       logged_in: localStorage.getItem('token') ? true : false,
@@ -78,6 +40,11 @@ class App extends Component {
       .then(json => {
         if (!!json) {
           this.setState({ username: json.username });
+          const ref = db.ref('/')
+          ref.on("value", (snapshot) => {
+            this.setState({ todoList: snapshot.val() });
+          });
+          return () => ref.off();
         }
       });
     }
