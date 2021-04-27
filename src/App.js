@@ -3,8 +3,12 @@ import Modal from "./components/Modal";
 import Navigation from './components/Navigation';
 import LoginForm from './components/LoginForm';
 import {firebase} from './initFirebase';
-
+import {
+  Table
+} from "reactstrap";
 const db = firebase.database();
+// const beHost = "http://localhost:8080/";
+const beHost = "http://188.166.113.225/";
 
 class App extends Component {
   constructor(props) {
@@ -17,8 +21,11 @@ class App extends Component {
       logged_in: localStorage.getItem('token') ? true : false,
       username: '',      
       activeItem: {
+        id: "",
         title: "",
         description: "",
+        author: "",
+        responsible: "",
         isCompleted: false        
       },      
     };
@@ -26,7 +33,7 @@ class App extends Component {
 
   componentDidMount() {
     if (this.state.logged_in) {
-      fetch('http://localhost:8080/current_user/', {
+      fetch(beHost +  'current_user/', {
         headers: {
           Authorization: `JWT ${localStorage.getItem('token')}`
         }
@@ -42,7 +49,13 @@ class App extends Component {
           this.setState({ username: json.username });
           const ref = db.ref('/')
           ref.on("value", (snapshot) => {
-            this.setState({ todoList: snapshot.val() });
+            const values = snapshot.val()
+            if (!!values) {
+              const todoList = Object.keys(values).map( ( item ) => {
+                return snapshot.val()[item];
+              } )
+              this.setState({ todoList: todoList });
+            }
           });
           return () => ref.off();
         }
@@ -52,7 +65,7 @@ class App extends Component {
 
   handle_login = (e, data) => {
     e.preventDefault();
-    fetch('http://localhost:8080/token-auth/', {
+    fetch(beHost + 'token-auth/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -81,10 +94,11 @@ class App extends Component {
 
   handleSubmit = (data) => {
     this.toggle();
+    const isUpdate = !!data.id;
+    const url = beHost + 'api/todos/' + (isUpdate ? data.id + '/' : '');
 
-    alert("save" + JSON.stringify(data));
-    fetch('http://localhost:8080/api/todos/', {
-      method: 'POST',
+    fetch(url, {
+      method: isUpdate ? 'PUT' : 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `JWT ${localStorage.getItem('token')}`
@@ -93,23 +107,22 @@ class App extends Component {
     })
       .then(res => res.json())
       .then(json => {
-        console.log(json);
+        //console.log(json);
       });
   };
 
   handleDelete = (data) => {
-    alert("delete" + JSON.stringify(data));
-    fetch(`http://localhost:8080/api/todos/${data.id}/`, {
+    const url = beHost + 'api/todos/' + data.id + '/'; 
+    fetch(url, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `JWT ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(data)
+      }
     })
       .then(res => res.json())
       .then(json => {
-        console.log(json);
+        //console.log(json);
       });    
   };
 
@@ -152,24 +165,28 @@ class App extends Component {
 
   renderItems = () => {
     const { viewCompleted } = this.state;
+
     const newItems = this.state.todoList.filter(
-      (item) => item.isCompleted === viewCompleted
+      (item) => {
+        return item.isCompleted === viewCompleted
+      }
     );
 
     return newItems.map((item) => (
-      <li
-        key={item.id}
-        className="list-group-item d-flex justify-content-between align-items-center"
-      >
-        <span
-          className={`todo-title mr-2 ${
-            this.state.viewCompleted ? "completed-todo" : ""
-          }`}
-          title={item.description}
-        >
+      <tr key={item.id}>
+        <td>
           {item.title}
-        </span>
-        <span>
+        </td>
+        <td>
+          {item.description}
+        </td>        
+        <td>
+          {item.author}
+        </td>        
+        <td>
+          {item.responsible}
+        </td>        
+        <td>
           <button
             className="btn btn-secondary mr-2"
             onClick={() => this.editItem(item)}
@@ -182,8 +199,8 @@ class App extends Component {
           >
             Delete
           </button>
-        </span>
-      </li>
+        </td>
+      </tr>
     ));
   };
 
@@ -230,9 +247,20 @@ class App extends Component {
                 </button>
               </div>
               {this.renderTabList()}
-              <ul className="list-group list-group-flush border-top-0">
-                {this.renderItems()}
-              </ul>
+              <Table borderless>
+                <thead>
+                  <tr>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Author</th>
+                  <th>Responsible</th>
+                  <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.renderItems()}
+                </tbody>
+              </Table>
             </div>
           </div>
         </div>

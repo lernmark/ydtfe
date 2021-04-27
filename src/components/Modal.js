@@ -48,9 +48,9 @@ export default class CustomModal extends Component {
                 value={this.state.activeItem.title}
                 onChange={this.handleChange}
                 placeholder="Enter Todo Title"
-              />
+              />              
             </FormGroup>
-            {/* <FormGroup>
+            <FormGroup>
               <Label for="todo-description">Description</Label>
               <Input
                 type="text"
@@ -60,7 +60,18 @@ export default class CustomModal extends Component {
                 onChange={this.handleChange}
                 placeholder="Enter Todo description"
               />
-            </FormGroup> */}
+            </FormGroup>
+            <FormGroup>
+              <Label for="todo-description">Responsible</Label>
+              <Input
+                type="text"
+                id="todo-responsible"
+                name="responsible"
+                value={this.state.activeItem.responsible}
+                onChange={this.handleChange}
+                placeholder="Enter Todo responsible"
+              />
+            </FormGroup>
             <FormGroup check>
               <Label check>
                 <Input
@@ -79,7 +90,7 @@ export default class CustomModal extends Component {
             color="success"
             onClick={() => onSave(this.state.activeItem)}
           >
-            Save
+            {this.state.activeItem.id ? 'Update': 'Save'}
           </Button>
         </ModalFooter>
       </Modal>
