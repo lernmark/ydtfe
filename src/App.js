@@ -8,7 +8,7 @@ import {
 } from "reactstrap";
 const db = firebase.database();
 // const beHost = "http://localhost:8080/";
-const beHost = "http://188.166.113.225/";
+const beHost = "https://www.lernmark.space/";
 
 class App extends Component {
   constructor(props) {
