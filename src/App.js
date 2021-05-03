@@ -47,20 +47,24 @@ class App extends Component {
       .then(json => {
         if (!!json) {
           this.setState({ username: json.username });
-          const ref = db.ref('/')
-          ref.on("value", (snapshot) => {
-            const values = snapshot.val()
-            if (!!values) {
-              const todoList = Object.keys(values).map( ( item ) => {
-                return snapshot.val()[item];
-              } )
-              this.setState({ todoList: todoList });
-            }
-          });
-          return () => ref.off();
+          this.load_data();
         }
       });
     }
+  }
+
+  load_data = () => {
+    const ref = db.ref('/')
+    ref.on("value", (snapshot) => {
+      const values = snapshot.val()
+      if (!!values) {
+        const todoList = Object.keys(values).map( ( item ) => {
+          return snapshot.val()[item];
+        } )
+        this.setState({ todoList: todoList });
+      }
+    });
+    return () => ref.off();    
   }
 
   handle_login = (e, data) => {
@@ -80,12 +84,14 @@ class App extends Component {
           displayed_form: '',
           username: json.user.username
         });
+        this.load_data();                
       });
   };
 
   handle_logout = () => {
     localStorage.removeItem('token');
     this.setState({ logged_in: false, username: '' });
+    this.setState({ todoList: [] });
   };
 
   toggle = () => {
